@@ -9,6 +9,23 @@ defmodule ExConfig.Type.EldapFilter do
   @impl true
   def handle(data, _opts), do: do_handle(data)
 
+  @doc """
+  Parses the human-readable representation of LDAP filter to the internal format
+  used by `:eldap` Erlang library.
+
+  ## Example
+
+      iex> ExConfig.Type.EldapFilter.parse("(&(givenName=John)(sn=Doe))")
+      {:ok,
+       {:and,
+        [
+          equalityMatch: {:AttributeValueAssertion, 'givenName', 'John'},
+          equalityMatch: {:AttributeValueAssertion, 'sn', 'Doe'}
+        ]}}
+  """
+  @spec parse(String.t) :: {:ok, term} | {:error, String.t}
+  def parse(str), do: do_handle(str)
+
   @doc false
   @spec error(:bad_data, any) :: {:error, String.t}
   def error(:bad_data, data), do: {:error, "Bad LDAP filter: '#{data}'"}

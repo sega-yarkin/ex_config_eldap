@@ -34,6 +34,7 @@ end
 
 Then in app:
 ```elixir
+# LDAP_FILTER='(&(givenName=John)(sn=Doe))' iex -S mix
 iex> MyApp.Config.ldap_filter
 {:and,
  [

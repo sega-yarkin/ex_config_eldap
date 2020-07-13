@@ -35,7 +35,7 @@ defmodule ExConfig.Type.EldapFilter.Parser do
   single_chl_tag = &unwrap_and_tag(to_chl.(&1), &2)
 
   attr  = utf8_string([?A..?Z, ?a..?z, ?0..?9, ?-, ?;, ?.], min: 1)
-  value = utf8_string([not: ?*, not: ?(, not: ?), not: ?\\, not: 0], min: 1)
+  value = utf8_string([not: ?*, not: ?(, not: ?), not: 0], min: 1)
 
   b_par = string("(")
   e_par = string(")")

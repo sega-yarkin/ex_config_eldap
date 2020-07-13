@@ -25,6 +25,8 @@ defmodule ExConfig.Type.EldapFilter.ParserTest do
   test "equality" do
     assert filter("(givenName=John)") == {:ok, eq('givenName', 'John')}
     assert filter("(cn=Babs Jensen)") == {:ok, eq('cn', 'Babs Jensen')}
+    assert filter("(o=Parens R Us \\28for all your parenthetical needs\\29)") == {:ok, eq('o', 'Parens R Us \\28for all your parenthetical needs\\29')}
+    assert filter("(1.3.6.1.4.1.1466.0=\\04\\02\\48\\69)") == {:ok, eq('1.3.6.1.4.1.1466.0', '\\04\\02\\48\\69')}
   end
 
   test "approximate" do
@@ -54,6 +56,8 @@ defmodule ExConfig.Type.EldapFilter.ParserTest do
     assert filter("(cn=*John*Doe*)") == {:ok, substrings.('cn', nil, ['John', 'Doe'], nil)}
     assert filter("(cn=*Doe)") == {:ok, substrings.('cn', nil, [], 'Doe')}
     assert filter("(cn=J*o*h*n*D*o*e)") == {:ok, substrings.('cn', 'J', ['o', 'h', 'n', 'D', 'o'], 'e')}
+    assert filter("(o=univ*of*mich*)") == {:ok, substrings.('o', 'univ', ['of', 'mich'], nil)}
+    assert filter("(cn=*\\2A*)") == {:ok, substrings.('cn', nil, ['\\2A'], nil)}
   end
 
   test "extensible" do
@@ -94,15 +98,24 @@ defmodule ExConfig.Type.EldapFilter.ParserTest do
   test "OR" do
     assert filter("(|)") == {:ok, :eldap.or([])}
     assert filter("(|(givenName=John)(givenName=Jon)(givenName=Johnathan)(givenName=Jonathan))") == {:ok, :eldap.or([
-      :eldap.equalityMatch('givenName', 'John'),
-      :eldap.equalityMatch('givenName', 'Jon'),
-      :eldap.equalityMatch('givenName', 'Johnathan'),
-      :eldap.equalityMatch('givenName', 'Jonathan'),
+      eq('givenName', 'John'),  eq('givenName', 'Jon'), eq('givenName', 'Johnathan'), eq('givenName', 'Jonathan'),
     ])}
   end
 
   test "NOT" do
-    assert filter("(!(givenName=John))") == {:ok, :eldap.not(:eldap.equalityMatch('givenName', 'John'))}
+    assert filter("(!(givenName=John))") == {:ok, :eldap.not(eq('givenName', 'John'))}
+    assert filter("(!(cn=Tim Howes))") == {:ok, :eldap.not(eq('cn', 'Tim Howes'))}
+  end
+
+  test "complex" do
+    assert filter("(&(objectClass=Person)(|(sn=Jensen)(cn=Babs J*)))") == {:ok,
+      :eldap.and([
+        eq('objectClass', 'Person'),
+        :eldap.or([
+          eq('sn', 'Jensen'),
+          :eldap.substrings('cn', initial: 'Babs J'),
+        ]),
+      ])}
   end
 
 end

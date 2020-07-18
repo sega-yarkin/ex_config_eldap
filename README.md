@@ -42,3 +42,31 @@ iex> MyApp.Config.ldap_filter
    equalityMatch: {:AttributeValueAssertion, 'sn', 'Doe'}
  ]}
 ```
+
+or:
+
+```elixir
+# LDAP_FILTER='(&(objectCategory=person)(objectClass=user))' iex -S mix
+iex> MyApp.Config.ldap_filter
+{:and,
+ [
+   equalityMatch: {:AttributeValueAssertion, 'objectCategory', 'person'},
+   equalityMatch: {:AttributeValueAssertion, 'objectClass', 'user'}
+ ]}
+
+iex> :eldap.and([
+...>   MyApp.Config.ldap_filter,
+...>   ExConfig.Type.EldapFilter.parse!("(&(givenName=John)(sn=Doe))"),
+...> ])
+{:and,
+ [
+   and: [
+     equalityMatch: {:AttributeValueAssertion, 'objectCategory', 'person'},
+     equalityMatch: {:AttributeValueAssertion, 'objectClass', 'user'}
+   ],
+   and: [
+     equalityMatch: {:AttributeValueAssertion, 'givenName', 'John'},
+     equalityMatch: {:AttributeValueAssertion, 'sn', 'Doe'}
+   ]
+ ]}
+```

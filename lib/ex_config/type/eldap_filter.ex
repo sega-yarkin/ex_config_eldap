@@ -6,6 +6,8 @@ defmodule ExConfig.Type.EldapFilter do
   alias ExConfig.Type.EldapFilter.Parser
   defstruct []
 
+  @type eldap_filter() :: term()
+
   @impl true
   def handle(data, _opts), do: do_handle(data)
 
@@ -23,13 +25,22 @@ defmodule ExConfig.Type.EldapFilter do
           equalityMatch: {:AttributeValueAssertion, 'sn', 'Doe'}
         ]}}
   """
-  @spec parse(String.t) :: {:ok, term} | {:error, String.t}
-  def parse(str), do: do_handle(str)
+  @spec parse(String.t) :: {:ok, eldap_filter} | {:error, String.t}
+  def parse(str) when byte_size(str) > 0, do: do_handle(str)
+
+  @spec parse!(String.t) :: eldap_filter | no_return
+  def parse!(str) when byte_size(str) > 0 do
+    case parse(str) do
+      {:ok, result}    -> result
+      {:error, reason} -> raise(reason)
+    end
+  end
 
   @doc false
   @spec error(:bad_data, any) :: {:error, String.t}
   def error(:bad_data, data), do: {:error, "Bad LDAP filter: '#{data}'"}
 
+  @spec do_handle(String.t) :: {:ok, eldap_filter} | {:error, String.t}
   defp do_handle(data) when byte_size(data) > 0 do
     case Parser.filter(data) do
       {:ok, [result], _, _, _, _} -> {:ok, result}

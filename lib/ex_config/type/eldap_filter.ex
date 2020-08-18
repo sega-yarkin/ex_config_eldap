@@ -59,8 +59,8 @@ defmodule ExConfig.Type.EldapFilter.Parser do
 
   import NimbleParsec
 
-  to_chl = &map(&1, {String, :to_charlist, []})
-  single_chl_tag = &unwrap_and_tag(to_chl.(&1), &2)
+  to_list = &map(&1, {:binary, :bin_to_list, []})
+  single_chl_tag = &unwrap_and_tag(to_list.(&1), &2)
 
   attr  = utf8_string([?A..?Z, ?a..?z, ?0..?9, ?-, ?;, ?.], min: 1)
   value = utf8_string([not: ?*, not: ?(, not: ?), not: 0], min: 1)
@@ -77,9 +77,9 @@ defmodule ExConfig.Type.EldapFilter.Parser do
 
   simple =
     empty()
-    |> concat(to_chl.(attr))
+    |> concat(to_list.(attr))
     |> concat(filtertype)
-    |> concat(to_chl.(value))
+    |> concat(to_list.(value))
     |> lookahead(e_par)
     |> reduce({:simple_item_eldap, []})
 
@@ -89,7 +89,7 @@ defmodule ExConfig.Type.EldapFilter.Parser do
   #---------------------------------------------------------
   present =
     empty()
-    |> concat(to_chl.(attr))
+    |> concat(to_list.(attr))
     |> ignore(string("=*"))
     |> lookahead(e_par)
     |> reduce({:present_item_eldap, []})
@@ -100,7 +100,7 @@ defmodule ExConfig.Type.EldapFilter.Parser do
   sub_any = single_chl_tag.(value, :any) |> ignore(string("*"))
   substring =
     empty()
-    |> concat(to_chl.(attr))
+    |> concat(to_list.(attr))
     |> ignore(string("="))
     |>   optional(single_chl_tag.(value, :initial))
     |>   ignore(string("*"))

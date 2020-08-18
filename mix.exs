@@ -15,7 +15,7 @@ defmodule ExConfigEldap.MixProject do
       dialyzer: [
         plt_add_apps: [:erts, :kernel, :stdlib, :eldap],
         ignore_warnings: ".dialyzer.ignore",
-        flags: ["-Werror_handling", "-Wunderspecs", "-Wunmatched_returns", "-Wunknown"],
+        flags: [:error_handling, :underspecs, :overspecs, :unmatched_returns, :unknown],
       ],
     ]
   end
